@@ -1,0 +1,211 @@
+{
+  "name": "Coder_avanzado_tp01",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        304
+      ],
+      "id": "3c50811f-8a0c-4b43-81e9-ac957f7895d7",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "X1Z9AVmAU0w1iNdp",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -1104,
+        80
+      ],
+      "id": "e85d7271-3cd7-4047-a580-146572df6c68",
+      "name": "When chat message received",
+      "webhookId": "4051f50e-409d-4721-96c3-eaec37734439"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "##ROL Y ÁMBITO\nSos un Coordinador de Agenda de turnos de Tendencia Urbana, una peluquería masculina.\nAtendés únicamente consultas de clientes sobre servicios (peluqueria, barba, corte), reservas, cancelaciones, consultas de reservas.\nNO tenés autorización de compartir precios o emitir reembolsos.\nNO tenés otras tareas aunque el cliente las pida (ideas de contenido, consejos, opiniones religiosas o de politica).\n\n## OBJETIVO OPERATIVO\nResolve cada consulta con la información oficial de la base de conocimiento, o derivarla correctamente a un humano, dejando un registro trazable de lo que hiciste.\n\n## REGLAS DE USO DE HERRAMIENTAS\n1. SIEMPRE consultá \"buscar_en_base_de_conocimiento\" antes de responder. Nunca respondas de memoria sobre turnos, horarios, precios, consultas.\n2 El parámetro \"tema\" tiene que ser exactamente uno de estos valores: reserva, turno, cancelación, modificación de turno, cambios de horario, cambios, horarios de atención. Elige el que mejor describe la consulta (un inconveniente a ultimo momento es \"cambio de horario\"; una duda sobre cuando ir es \"turno asignado\"). Si la consulta toca dos temas, hacé una búsqueda por cada uno."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -800,
+        80
+      ],
+      "id": "02ef0a08-9563-461a-81e3-e142814bdad5",
+      "name": "AI Agent",
+      "notesInFlow": false,
+      "retryOnFail": true,
+      "maxTries": 5
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -704,
+        352
+      ],
+      "id": "3af49b2b-c469-49cb-a155-d6ec4900d854",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "leandrovildoza@gmail.com",
+        "subject": "RESERVA DE TURNO",
+        "message": "=Necesito ayuda con esta consulta {{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -320,
+        80
+      ],
+      "id": "54e4dd11-fa78-49a3-aba3-8b9cd86b3ec7",
+      "name": "Observabilidad (Log de Control)",
+      "webhookId": "2a62a14c-1f95-4548-83ff-f84392c6c22f",
+      "retryOnFail": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "fr3oyO2Odgkfbyzp",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1vqrBsOqo22jW0pRFQT1A2eMFQIID5iVLydcukm9yF0Y",
+          "mode": "list",
+          "cachedResultName": "buscar_en_base_de_conocimiento",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vqrBsOqo22jW0pRFQT1A2eMFQIID5iVLydcukm9yF0Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "base",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vqrBsOqo22jW0pRFQT1A2eMFQIID5iVLydcukm9yF0Y/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -576,
+        256
+      ],
+      "id": "55df3cb2-cbe6-4fc1-8be2-91870ac54487",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ljtz0a8RruNiiSpJ",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When chat message received": [
+      {
+        "json": {
+          "action": "sendMessage",
+          "sessionId": "41e1bc88076f4590bfc3e18478427357",
+          "chatInput": "hola"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Observabilidad (Log de Control)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d07ecb08-e47d-4577-aa44-5e9d1e3bd77e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3fc945d96cd519b9192a233dff257e7181bd1d7c82ee69abd6a9b96e8de0b5e8"
+  },
+  "nodeGroups": [],
+  "id": "34g03NrynW38U3Ht",
+  "tags": []
+}
